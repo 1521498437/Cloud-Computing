@@ -16,7 +16,7 @@
 
 ![](./Image1/3.png)
 
-登录成功
+Web Shell登录已购买的云服务器实例成功
 
 ![](./Image1/4.png)
 
@@ -195,9 +195,11 @@ git push -u origin master
 
 ### 7、下载Typora
 
-README.md文档必须由Typora软件来撰写、编辑
+README.md文档必须由Typora软件来撰写、编辑；
 
 Typora下载链接：https://pc.qq.com/detail/1/detail_24041.html
+
+**注意：**当每次用Typora更新完文档以后，需同步到GitHub中，就要再次执行“cd”和最后三条命令。
 
 ## 三、安装VMware Workstation虚拟机并下载创建Cent OS
 
