@@ -1,4 +1,0 @@
-# CloudComputing
-
-Hello World!
-
