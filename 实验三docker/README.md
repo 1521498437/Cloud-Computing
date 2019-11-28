@@ -1,6 +1,8 @@
 # Docker基础实验
 
-## 步骤一		安装Docker
+## 实验一：
+
+### 安装Docker
 
 更新应用程序数据库
 
@@ -44,7 +46,11 @@ docker version
 
 ![](./Image3/2.png)
 
-## 步骤二	拉取CentOS镜像，并基于该镜像运行容器，在容器				实例上完成WordPress的安装，并推送到Docker Hub 
+
+
+## 实验二：
+
+### 加载CentOS镜像
 
 查看当前系统docker的相关信息：
 
@@ -213,7 +219,7 @@ docker push 1521498437/centos:add_logfile
 
 ![](./Image3/18.png)
 
-### 容器中安装wordpress
+### 在Docker的CentOS容器实例中安装WordPress
 
 运行Docker容器（为了方便检测后续wordpress搭建是否成功，需设置端口映射（-p），将容器端口80 
 映射到主机端口8888，Apache和MySQL需要 systemctl 管理服务启动，需要加上参数 –privileged 
@@ -240,7 +246,7 @@ docker ps
 
 ![](./Image3/21.png)
 
-参照我上一次实验的内容[**实验二website**](https://github.com/1521498437/CloudComputing/tree/master/%E5%AE%9E%E9%AA%8C%E4%BA%8Cwebsite) 来安装httpd、php、mysql和wprdpress（完成之后访问公网IP都需加上端口  :8888)
+接下来参照我上一次实验的内容[**实验二website**](https://github.com/1521498437/CloudComputing/tree/master/%E5%AE%9E%E9%AA%8C%E4%BA%8Cwebsite) 来安装Apache Web、php、mysql和wprdpress（完成之后访问公网IP都需加上端口  :8888)
 
 ![](./Image3/22.png)
 
@@ -258,7 +264,7 @@ docker ps
 
 ![](./Image3/27.png)
 
-### 容器中安装wordpress至Docker Hub中
+### 将带有WordPress的CentOS镜像推送到容器仓库
 
 将容器生成镜像：
 
@@ -302,3 +308,146 @@ docker push 1521498437/centos:wordpress_on_centos7
 登陆Docker Hub，查看Repository，可以看到镜像已上传：
 
 ![](./Image3/33.png)
+
+
+
+## 实验三：
+
+### 利用Dockerfile文件创建包含WordPress的镜像
+
+在/opt工作目录下新建一个叫作WORDPRESS的文件夹，并进入此目录
+
+```
+mkdir /opt/WORDPRESS
+cd /opt/WORDPRESS
+```
+
+下载MariaDB的4个rpm包，用于在镜像中搭建mysql
+
+```
+wget http://yum.mariadb.org/10.0.33/centos7-amd64/rpms/MariaDB-10.0.33-centos7-x86_64-client.rpm
+wget http://yum.mariadb.org/10.0.33/centos7-amd64/rpms/MariaDB-10.0.33-centos7-x86_64-common.rpm
+wget http://yum.mariadb.org/10.0.33/centos7-amd64/rpms/MariaDB-10.0.33-centos7-x86_64-compat.rpm
+wget http://yum.mariadb.org/10.0.33/centos7-amd64/rpms/MariaDB-10.0.33-centos7-x86_64-server.rpm
+```
+
+新建并编辑Dockerfile的内容
+
+```
+vim Dockerfile
+```
+
+![](./Image3/34.png)
+
+![](./Image3/35.png)
+
+新建并编辑脚本文件run.sh
+
+```
+vim run.sh
+```
+
+![](./Image3/36.png)
+
+新建并编辑需要执行的sql文件（设置mysql登录用户的账号和密码）
+
+```
+vim wordpress.sql
+```
+
+![](./Image3/37.png)
+
+新建并编辑mysql配置文件
+
+```
+vim server.cnf
+```
+
+![](./Image3/38.png)
+
+WORDPRESS文件夹中完整内容如下：
+
+![](./Image3/39.png)
+
+输入以下命令依据Dockerfile来构建镜像，注意在语句的最后有个“.”
+
+（镜像名——mywordpress:dockerfile）
+
+```
+docker build -t mywordpress:dockerfile .
+```
+
+![](./Image3/40.png)
+
+构建镜像的过程十分漫长。。。
+
+最后输出如下结果即表示镜像创建成功：
+
+![](./Image3/41.png)
+
+输入docker images查看这个镜像
+
+![](./Image3/42.png)
+
+输入以下命令来依据刚刚构建好的镜像运行一个新容器，并添加端口映射，这里我映射的端口为1346
+
+```
+docker run -dit -p 1346:80 mywordpress:dockerfile
+```
+
+以下输出表示新容器的ID:
+
+![](./Image3/43.png)
+
+进入容器，（容器的ID号可以不用全部输入，如：0c3a8）
+
+```
+docker exec -it 0c3a8 /bin/bash
+```
+
+![](./Image3/44.png)
+
+测试php是否安装成功，查看php版本
+
+```
+php -v
+```
+
+![](./Image3/45.png)
+
+测试mysql是否安装成功：
+
+首先将当前用户授予mysql安全权限
+
+```
+mysqld_safe --user=mysql &
+```
+
+![](./Image3/46.png)
+
+连接mysql数据库服务器
+
+```
+mysql -u root -p
+```
+
+![](./Image3/47.png)
+
+新建一个名为WORDPRESS的数据库并查看
+
+![](./Image3/48.png)
+
+打开浏览器，访问http://106.54.11.139:1346，可以看到成功显示出wordpress的初始界面。
+
+根据网页指示一步步地配置wordpress，其中有一步是要在容器中的/var/www/html路径下新建并编写wp-config.php文件（WordPress的配置依赖文件），将网页上所提供的代码直接复制进去，保存即可：
+
+![](./Image3/50.png)
+
+![](./Image3/51.png)
+
+最后输入账号密码登录，成功进入wordpress编辑页面：
+
+![](./Image3/49.png)
+
+
+
